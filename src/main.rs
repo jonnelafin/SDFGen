@@ -55,7 +55,7 @@ fn get_closest(active: &Vec<[u32; 2]>, value: &[u32; 2]) -> ([u32; 2], u32){
 }
 
 fn gen_sdf(mut img: image::DynamicImage, active: &Vec<[u32; 2]>) -> image::DynamicImage{
-	let scale = 64/4;
+	let scale = 2;
 	let w = img.dimensions().0/scale;
 	let h = img.dimensions().1/scale;
 	let ws = w as usize;
@@ -69,6 +69,7 @@ fn gen_sdf(mut img: image::DynamicImage, active: &Vec<[u32; 2]>) -> image::Dynam
 			let ys = y as usize;
 			let r = 255u8 - (get_closest(&active, &[x*scale, y*scale]).1 as f64 * max_dist) as u8;
     		img.put_pixel(y, x, image::Rgba([r,r,r, 255]));
+    		//img.put_pixel(y*scale, x*scale, image::Rgba([r,r,r, 255])); //nice effect
     		ind += 1;
 		}
 		print!("[{}%]: {}/{}", ((ind as f64)/(full as f64) * 100.0) as u32, ind, full);
@@ -81,7 +82,7 @@ fn main() {
     println!("Opening image...");
     // Use the open function to load an image from a Path.
     // `open` returns a `DynamicImage` on success.
-    let mut img = image::open("valve_1k.png").unwrap();
+    let mut img = image::open("valve_256.png").unwrap();
 
     // The dimensions method returns the images width and height.
     println!("dimensions {:?}", img.dimensions());
