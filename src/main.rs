@@ -35,11 +35,18 @@ fn get_active(img: &image::DynamicImage) -> Vec<[u32;2]>{
 	out
 }
 
-fn get_closest(active: &Vec<[u32; 2]>, value: &[u32; 2]) -> ([u32; 2], u32){
+fn get_closest(active: &Vec<[u32; 2]>, value: &[u32; 2], secondPass: bool) -> [([u32; 2], u32); 3]{
 	let x = value[0] as f64;
 	let y = value[1] as f64;
 	let mut best = [INF, INF];
 	let mut bests= INF;
+	//Second pass
+	let mut bestL= [INF, INF];
+	let mut bestsL=INF;
+	//Third pass
+	let mut bestT = [INF, INF];
+	let mut bestsT=INF;
+	
 	for i in active{
 		let ix = i[0] as f64;
 		let iy = i[1] as f64;
@@ -50,8 +57,19 @@ fn get_closest(active: &Vec<[u32; 2]>, value: &[u32; 2]) -> ([u32; 2], u32){
 			bests = diff;
 			best = *i;
 		}
+		else if secondPass && diff < bestsL{
+			bestsL = diff;
+			bestL= *i;
+		}
+		else if secondPass && diff < bestsT{
+			bestsT = diff;
+			bestT  = *i;
+		}
 	}
-	return (best, bests);
+	if secondPass{
+		return [(best, bests), (bestL, bestsL), (bestT, bestsT)];
+	}
+	return [(best, bests), (best, bests), (best, bests)];
 }
 
 fn gen_sdf(mut img: image::DynamicImage, active: &Vec<[u32; 2]>) -> image::DynamicImage{
@@ -67,8 +85,11 @@ fn gen_sdf(mut img: image::DynamicImage, active: &Vec<[u32; 2]>) -> image::Dynam
 		let xs = x as usize;
 		for y in 0..h{
 			let ys = y as usize;
-			let r = 255u8 - (get_closest(&active, &[x*scale, y*scale]).1 as f64 * max_dist) as u8;
-    		img.put_pixel(y, x, image::Rgba([r,r,r, 255]));
+			let closest = get_closest(&active, &[x*scale, y*scale], true);
+			let r = 255u8 - (closest[0].1 as f64 * max_dist) as u8;
+			let g = 255u8 - (closest[1].1 as f64 * max_dist) as u8;
+			let b = 255u8 - (closest[2].1 as f64 * max_dist) as u8;
+    		img.put_pixel(y, x, image::Rgba([r,g,b, 255]));
     		//img.put_pixel(y*scale, x*scale, image::Rgba([r,r,r, 255])); //nice effect
     		ind += 1;
 		}
@@ -91,7 +112,7 @@ fn main() {
     println!("{:?}", img.color());
     println!("Reading pixels...");
 	let active = get_active(&img);
-	println!("Closest: {:?}", get_closest(&active, &[0, 0]));
+	println!("Closest: {:?}", get_closest(&active, &[0, 0], true));
     println!("Generating sdf...");
 	img = gen_sdf(img, &active);
     println!("Saving pixels...");
