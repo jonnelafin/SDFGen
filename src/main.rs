@@ -3,9 +3,12 @@ extern crate image;
 use image::GenericImageView;
 use image::GenericImage;
 
+use std::thread;
+
 const WHITE: image::Rgba<u8> = image::Rgba([255u8, 255u8, 255u8, 255u8]);
 const INF: u32 = 9999999;
 const MAX_DIST: u32 = 32;
+const scale: u32 = 2;
 
 fn get_active(img: &image::DynamicImage) -> Vec<[u32;2]>{
 	let w = img.dimensions().0;
@@ -72,31 +75,73 @@ fn get_closest(active: &Vec<[u32; 2]>, value: &[u32; 2], secondPass: bool) -> [(
 	return [(best, bests), (best, bests), (best, bests)];
 }
 
-fn gen_sdf(mut img: image::DynamicImage, active: &Vec<[u32; 2]>) -> image::DynamicImage{
-	let scale = 2;
+fn gen_sdf(img: &image::DynamicImage, active: &Vec<[u32; 2]>, from: [u32; 2], to: [u32; 2], id: u32) -> image::DynamicImage{
+//	let scale = 4;
 	let w = img.dimensions().0/scale;
 	let h = img.dimensions().1/scale;
 	let ws = w as usize;
 	let hs = h as usize;
-	let full = w*h;
-	let max_dist = 255.0 / w as f64;
+	
+	let mut to_x = to[0];
+	if to_x == 0{to_x = w;}
+	let mut to_y = to[1];
+	if to_y == 0{to_y = h;}
+	let w2 = to_x - from[0];
+	let h2 = to_y - from[1];
+
+	let mut out = create_shadow_copy(img);
+	
+	let full = w2*h2;
+	let max_dist = 255.0 / w2 as f64;
 	let mut ind = 0;
-	for x in 0..w {
+	for x in from[0]..to_x {
 		let xs = x as usize;
-		for y in 0..h{
+		for y in from[1]..to_y{
 			let ys = y as usize;
 			let closest = get_closest(&active, &[x*scale, y*scale], true);
 			let r = 255u8 - (closest[0].1 as f64 * max_dist) as u8;
 			let g = 255u8 - (closest[1].1 as f64 * max_dist) as u8;
 			let b = 255u8 - (closest[2].1 as f64 * max_dist) as u8;
-    		img.put_pixel(y, x, image::Rgba([r,g,b, 255]));
+    		out.put_pixel(y, x, image::Rgba([r,g,b, 255]));
     		//img.put_pixel(y*scale, x*scale, image::Rgba([r,r,r, 255])); //nice effect
     		ind += 1;
 		}
-		print!("[{}%]: {}/{}", ((ind as f64)/(full as f64) * 100.0) as u32, ind, full);
-		println!("");
+		let percent = ((ind as f64)/(full as f64) * 100.0) as u32;
+		if percent % 10 == 0{
+			print!("{}[{}%]: {}/{}", id, percent, ind, full);
+			println!("");
+		}
 	}
-	img
+	out
+}
+fn create_shadow_copy(img: &image::DynamicImage) -> image::DynamicImage{
+	let w = img.dimensions().0;
+	let h = img.dimensions().1;
+	let ws = w as usize;
+	let hs = h as usize;
+	image::DynamicImage::new_rgb8(w,h)
+}
+fn join_rgba(r1: &image::Rgba<u8>, r2: &image::Rgba<u8>) -> image::Rgba<u8>{
+	let r = r1[0] + r2[0];
+	let g = r1[1] + r2[1];
+	let b = r1[2] + r2[2];
+	image::Rgba([r,g,b, 255])
+}
+fn join_images(img: &image::DynamicImage, img2: &image::DynamicImage) -> image::DynamicImage{
+	let mut img3 = create_shadow_copy(img);
+	let w = img.dimensions().0;
+	let h = img.dimensions().1;
+	for x in 0..w {
+		let xs = x as usize;
+		for y in 0..h{
+			let ys = y as usize;
+			let p1 = img.get_pixel(y, x);
+			let p2 = img2.get_pixel(y, x);
+			let r = join_rgba(&p1, &p2);
+    		img3.put_pixel(y, x, r);
+		}
+	}
+	img3
 }
 
 fn main() {
@@ -114,9 +159,43 @@ fn main() {
 	let active = get_active(&img);
 	println!("Closest: {:?}", get_closest(&active, &[0, 0], true));
     println!("Generating sdf...");
-	img = gen_sdf(img, &active);
+	let mut img3 = create_shadow_copy(&img);
+    
+    const threads: usize = 16;
+    let mut pieces = [image::DynamicImage::ImageRgb8; threads];
+    let mut handles= vec![];
+    for i in 0..threads{
+    	let i2 = i as u32;
+	    let imgClone = img.clone();
+	    let activeClone = active.clone();
+	    let handle = thread::spawn(move || {
+			let w = imgClone.dimensions().0/scale;
+			let h = imgClone.dimensions().1/scale;
+			gen_sdf(&imgClone, &activeClone, [0,((w/threads as u32)*(i2))], [0,((w/threads as u32)*(i2+1))], i2)
+		});
+		handles.push(handle);
+//	    let handle2 = thread::spawn(move || {
+//			let w = imgClone.dimensions().0/scale;
+//			let h = imgClone.dimensions().1/scale;
+//			gen_sdf(&imgClone, &activeClone, [0,w/2], [0,0])
+//		});
+	}
+	for i in 0..threads{
+		let result = handles.pop();
+		let backup = img3.clone();
+		img3 = match result{
+			Some(x) => join_images(&(x.join().unwrap()), &img3),
+			None => img3
+		};
+//		let img2 = handles.pop()
+		
+	}
+	println!("Cropping...");
+	let w = img3.dimensions().0/scale;
+	let h = img3.dimensions().1/scale;
+	let fin = image::DynamicImage::crop(&mut img3, 0, 0, w, h);
     println!("Saving pixels...");
     // Write the contents of this image to the Writer in PNG format.
-    img.save("out_sdf.png").unwrap();
+    fin.save("out_sdf.png").unwrap();
     println!("Have a good day.");
 }
