@@ -1,5 +1,5 @@
 [package]
-name = "sdf"
+name = "sdfgen"
 version = "0.5.0"
 authors = ["Elias Eskelinen <elias.eskelinen@pm.me>"]
 edition = "2018"
