@@ -1,0 +1,10 @@
+threads,time (250x250),time (500x500), 3values
+1,38440ms,153276ms,true
+2,19271ms,79252ms,true
+4,11041ms,40557ms,true
+8,10312ms,40461ms,true
+16,10543ms,40915ms,true
+32,9659ms,40173ms,true
+64,8665ms,37679ms,true
+128,6114ms,33108ms,true
+//upwards from 16, large portions of the image are cut out

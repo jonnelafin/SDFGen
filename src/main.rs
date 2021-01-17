@@ -25,9 +25,9 @@ use std::thread;
 const WHITE: image::Rgba<u8> = image::Rgba([255u8, 255u8, 255u8, 255u8]);
 const INF: u32 = 9999999;
 //const MAX_DIST: u32 = 32;
-const SCALE: u32 = 2;
+const SCALE: u32 = 32;
 
-
+const THREADS: usize = 8;
 
 fn get_active(img: &image::DynamicImage) -> Vec<[u32;2]>{
 	let w = img.dimensions().0;
@@ -117,10 +117,10 @@ fn gen_sdf(img: &image::DynamicImage, active: &Vec<[u32; 2]>, from: [u32; 2], to
 		let _xs = x as usize;
 		for y in from[1]..to_y{
 			let _ys = y as usize;
-			let closest = get_closest(&active, &[x*SCALE, y*SCALE], true);
-			let r = 255u8 - (closest[0].1 as f64 * max_dist) as u8;
-			let g = 255u8 - (closest[1].1 as f64 * max_dist) as u8;
-			let b = 255u8 - (closest[2].1 as f64 * max_dist) as u8;
+			let closest = get_closest(&active, &[x*SCALE, y*SCALE], false);
+			let r = 255u8 - (closest[0].1 as f64 / max_dist) as u8;
+			let g = 255u8 - (closest[1].1 as f64 / max_dist) as u8;
+			let b = 255u8 - (closest[2].1 as f64 / max_dist) as u8;
     		out.put_pixel(y, x, image::Rgba([r,g,b, 255]));
     		//img.put_pixel(y*SCALE, x*SCALE, image::Rgba([r,r,r, 255])); //nice effect
     		ind += 1;
@@ -166,7 +166,7 @@ fn main() {
     println!("Opening image...");
     // Use the open function to load an image from a Path.
     // `open` returns a `DynamicImage` on success.
-    let img = image::open("valve_256.png").unwrap();
+    let img = image::open("images/smiley.png").unwrap();
 
     // The dimensions method returns the images width and height.
     println!("dimensions {:?}", img.dimensions());
@@ -179,7 +179,6 @@ fn main() {
     println!("Generating sdf...");
 	let mut img3 = create_shadow_copy(&img);
     
-    const THREADS: usize = 16;
     let mut handles= vec![];
     for i in 0..THREADS{
     	let i2 = i as u32;
