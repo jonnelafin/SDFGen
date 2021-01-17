@@ -10,6 +10,16 @@ const INF: u32 = 9999999;
 const MAX_DIST: u32 = 32;
 const scale: u32 = 2;
 
+//! SDFGen generates a preferably lower resolution distance field of an image.
+//!
+//! This distance field can be upscaled fast with bilinear filters built into gpus nowadays.
+//! Final sharp output of this upscale can be extracted using a threshold filter, with the default parameters in this program, threshold should be set to about 99%. 
+//!
+//! # Examples
+//! ```
+//! cargo run --release
+//! ```
+
 fn get_active(img: &image::DynamicImage) -> Vec<[u32;2]>{
 	let w = img.dimensions().0;
 	let h = img.dimensions().1;
