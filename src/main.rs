@@ -1,15 +1,3 @@
-extern crate image;
-
-use image::GenericImageView;
-use image::GenericImage;
-
-use std::thread;
-
-const WHITE: image::Rgba<u8> = image::Rgba([255u8, 255u8, 255u8, 255u8]);
-const INF: u32 = 9999999;
-const MAX_DIST: u32 = 32;
-const scale: u32 = 2;
-
 //! SDFGen generates a preferably lower resolution distance field of an input image.
 //!
 //! This distance field can be upscaled fast with bilinear filters built into gpus nowadays.
@@ -21,6 +9,23 @@ const scale: u32 = 2;
 //! cargo run --release
 //! ```
 //! Currently all variables are hardcoded, they can be changed in the main program file "/scr/main.rs".
+extern crate chrono;
+use chrono::Utc;
+
+extern crate image;
+use image::GenericImageView;
+use image::GenericImage;
+
+use std::thread;
+
+
+
+const WHITE: image::Rgba<u8> = image::Rgba([255u8, 255u8, 255u8, 255u8]);
+const INF: u32 = 9999999;
+const MAX_DIST: u32 = 32;
+const scale: u32 = 2;
+
+
 
 fn get_active(img: &image::DynamicImage) -> Vec<[u32;2]>{
 	let w = img.dimensions().0;
@@ -157,6 +162,7 @@ fn join_images(img: &image::DynamicImage, img2: &image::DynamicImage) -> image::
 }
 
 fn main() {
+    let start_time = Utc::now().time();
     println!("Opening image...");
     // Use the open function to load an image from a Path.
     // `open` returns a `DynamicImage` on success.
@@ -209,5 +215,8 @@ fn main() {
     println!("Saving pixels...");
     // Write the contents of this image to the Writer in PNG format.
     fin.save("out_sdf.png").unwrap();
+    let end_time = Utc::now().time();
+    let diff = end_time - start_time;
+    println!("Took {}ms to execute.", diff.num_milliseconds());
     println!("Have a good day.");
 }
