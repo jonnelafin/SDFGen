@@ -12,8 +12,9 @@ cargo build --release
 Without the release flag, the execution time can be up to 10 times slower.
 ## Running the project
 ```console
-Usage:
   ./target/release/sdf [OPTIONS]
+```
+```rust
 Optional arguments:
   -h,--help             Show this help message and exit
   -v,--verbose          Be verbose
