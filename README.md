@@ -10,4 +10,6 @@ Run the project
 ```rust
 cargo run --release
 ```
+Without the release flag, the execution time can be up to 10 times slower.
+
 Currently all variables are hardcoded, they can be changed in the main program file "/scr/main.rs".
