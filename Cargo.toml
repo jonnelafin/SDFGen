@@ -9,3 +9,4 @@ edition = "2018"
 [dependencies]
 image = "0.23.12"
 chrono = "0.4.19"
+argparse = "0.2.2"
