@@ -1,8 +1,10 @@
 [package]
 name = "sdfgen"
+description = "SDFGen generates a (preferably) lower resolution distance field from an input image."
 version = "0.5.1"
 authors = ["Elias Eskelinen <elias.eskelinen@pm.me>"]
 edition = "2018"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

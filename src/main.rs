@@ -1,5 +1,5 @@
 // <Readme>  //
-//! SDFGen generates a preferably lower resolution distance field from an input image.
+//! SDFGen generates a (preferably) lower resolution distance field from an input image.
 //!
 //! This distance field can be upscaled fast with bilinear filters built into gpus nowadays.
 //! Final sharp output of this upscale can be extracted using a threshold filter. With the default parameters in this program, threshold should be set to about 99%. 
@@ -29,19 +29,19 @@
 //! <!-- Instead, make the edits into the main.rs file and then run the compile_readme.sh or equivalent. --> 
 // </Readme> //
 
-//Main image parsing and manipulation
+// Main image parsing and manipulation
 extern crate image;
 use image::GenericImageView;
 use image::GenericImage;
 
-//Threading
+// Threading
 use std::thread;
 
-//Excecution time
+// Excecution time
 extern crate chrono;
 use chrono::Utc;
 
-//Argument parsing
+// Argument parsing
 extern crate argparse;
 use argparse::{ArgumentParser, StoreTrue, Store};
 
@@ -53,6 +53,7 @@ const INF: u32 = 9999999;
 
 //const threads: usize = 16;
 
+/// Returns a vector of the coordinates in a given image.
 fn get_active(img: &image::DynamicImage) -> Vec<[u32;2]>{
 	let w = img.dimensions().0;
 	let h = img.dimensions().1;
@@ -84,6 +85,9 @@ fn get_active(img: &image::DynamicImage) -> Vec<[u32;2]>{
 	out
 }
 
+/// Finds the closest coordinate in the give coordinate list _active_.
+/// Returns and array of the size of 3. If secondpass is not enabled these will all be the same ( the closest coordinate).
+/// _second\_pass_ enables the search of three closest values, instead of just one.
 fn get_closest(active: &Vec<[u32; 2]>, value: &[u32; 2], second_pass: bool) -> [([u32; 2], u32); 3]{
 	let x = value[0] as f64;
 	let y = value[1] as f64;
@@ -121,6 +125,21 @@ fn get_closest(active: &Vec<[u32; 2]>, value: &[u32; 2], second_pass: bool) -> [
 	return [(best, bests), (best, bests), (best, bests)];
 }
 
+/// Generates a distance field from an image and an active map (obtained from get_active()).
+///
+/// _img_ is the input image,
+///
+/// _active_ the white pixels in the image,
+///
+/// _from_ coordinates where the reading of _img_ starts
+///
+/// _to_ coordinates where the reading of _img_ ends
+///
+/// _id_ simply an identifier for the console log. If this is not important to you just pass 0,
+///
+/// _scale_ the factor of the image read
+///
+/// The mapping of the output is all over the place.
 fn gen_sdf(img: &image::DynamicImage, active: &Vec<[u32; 2]>, from: [u32; 2], to: [u32; 2], id: u32, scale: u32) -> image::DynamicImage{
 //	let scale = 4;
 	let w = img.dimensions().0/scale;
@@ -160,17 +179,24 @@ fn gen_sdf(img: &image::DynamicImage, active: &Vec<[u32; 2]>, from: [u32; 2], to
 	println!("");
 	out
 }
+
+/// Creates a black image with the dimensions of _img_.
 fn create_shadow_copy(img: &image::DynamicImage) -> image::DynamicImage{
 	let w = img.dimensions().0;
 	let h = img.dimensions().1;
 	image::DynamicImage::new_rgb8(w,h)
 }
+
+/// Adds two rgba pixels together.
 fn join_rgba(r1: &image::Rgba<u8>, r2: &image::Rgba<u8>) -> image::Rgba<u8>{
 	let r = r1[0] + r2[0];
 	let g = r1[1] + r2[1];
 	let b = r1[2] + r2[2];
 	image::Rgba([r,g,b, 255])
 }
+
+/// Adds two images together, pixel by pixel. Dimensions of the output image is read from _img_.
+/// It is a good idea for the two images to be the same size, otherwise this function will probably panic. ;)
 fn join_images(img: &image::DynamicImage, img2: &image::DynamicImage) -> image::DynamicImage{
 	let mut img3 = create_shadow_copy(img);
 	let w = img.dimensions().0;
@@ -188,6 +214,7 @@ fn join_images(img: &image::DynamicImage, img2: &image::DynamicImage) -> image::
 	img3
 }
 
+/// Main program function that parses the arguments and invokes the necessary functions to generate and save the distance field.
 fn main() {
     let mut verbose = false;
 
