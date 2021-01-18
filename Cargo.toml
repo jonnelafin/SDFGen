@@ -5,6 +5,9 @@ version = "0.5.1"
 authors = ["Elias Eskelinen <elias.eskelinen@pm.me>"]
 edition = "2018"
 license = "MIT"
+homepage = "https://github.com/jonnelafin/SDFGen"
+documentation = "https://jonnelafin.github.io/SDFGen/"
+repository = "https://github.com/jonnelafin/SDFGen"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
