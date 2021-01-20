@@ -8,6 +8,12 @@ license = "MIT"
 homepage = "https://github.com/jonnelafin/SDFGen"
 documentation = "https://jonnelafin.github.io/SDFGen/"
 repository = "https://github.com/jonnelafin/SDFGen"
+exclude = [
+    "images/*",
+    "**/*.sh",
+    "performance_data/*",
+    "out_sdf.png",
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
