@@ -34,6 +34,7 @@ sourcesIndex["rayon_core"] = {"name":"","dirs":[{"name":"compile_fail","files":[
 sourcesIndex["scoped_threadpool"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["scopeguard"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["sdfgen"] = {"name":"","files":["main.rs"]};
+sourcesIndex["sdfgen_lib"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["tiff"] = {"name":"","dirs":[{"name":"decoder","files":["ifd.rs","mod.rs","stream.rs"]},{"name":"encoder","files":["colortype.rs","mod.rs","writer.rs"]}],"files":["bytecast.rs","error.rs","lib.rs","tags.rs"]};
 sourcesIndex["time"] = {"name":"","files":["display.rs","duration.rs","lib.rs","parse.rs","sys.rs"]};
 sourcesIndex["weezl"] = {"name":"","files":["decode.rs","encode.rs","error.rs","lib.rs"]};
