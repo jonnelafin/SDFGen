@@ -2,6 +2,7 @@
 //! DO NOT USE IN PRODUCTION IF YOU ARE SANE. This package is not actively maintained and performs suboptimally to say the least.
 //! ## Alternatives
 //! - [distance-field](https://crates.io/crates/distance-field)
+//!
 //! SDFGen generates a (preferably) lower resolution distance field from an input image.
 //! This distance field can be upscaled fast with bilinear filters built into gpus nowadays.
 //! Final sharp output of this upscale can be extracted using a threshold filter. With the default parameters in this program, threshold should be set to about 99%. 
