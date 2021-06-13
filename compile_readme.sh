@@ -1,1 +1,1 @@
-cargo readme > README.md
+cargo readme -i ./src/main.rs > README.md
