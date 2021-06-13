@@ -1,7 +1,7 @@
 [package]
 name = "sdfgen"
 description = "SDFGen generates a (preferably) lower resolution distance field from an input image."
-version = "0.6.0"
+version = "0.6.1"
 authors = ["Elias Eskelinen <elias.eskelinen@pm.me>"]
 edition = "2018"
 license = "MIT"
